@@ -1,0 +1,86 @@
+# One command brings up the whole topology:
+#   docker compose up --build
+#
+# Honest demo boundary: the four Node services use the in-memory data layer
+# described in README. PostgreSQL 16 and Redis are declared so the production
+# replacement points are explicit, but this demo does not connect to them and
+# therefore needs no schema migration at startup. No real credentials ship.
+services:
+  operations-assistant:
+    build: .
+    command: node mock-server/ops.js
+    ports:
+      - "3001:3001"
+    environment:
+      OPS_PORT: "3001"
+      GATEWAY_URL: "http://model-gateway:3002"
+      REVIEW_URL: "http://review-queue:3003"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3001/api/v1/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  model-gateway:
+    build: .
+    command: node mock-server/gateway.js
+    ports:
+      - "3002:3002"
+    environment:
+      GATEWAY_PORT: "3002"
+      VENDOR_URL: "http://mock-vendor:3004"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3002/api/v1/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  review-queue:
+    build: .
+    command: node mock-server/review-queue.js
+    ports:
+      - "3003:3003"
+    environment:
+      REVIEW_PORT: "3003"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3003/api/v1/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mock-vendor:
+    build: .
+    command: node mock-server/mock-vendor.js
+    ports:
+      - "3004:3004"
+    environment:
+      VENDOR_PORT: "3004"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3004/api/v1/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  postgres16:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ops_demo
+      POSTGRES_USER: ops_demo
+      POSTGRES_PASSWORD: fictional_password_only
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ops_demo -d ops_demo"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

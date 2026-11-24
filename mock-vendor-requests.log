@@ -1,0 +1,5 @@
+{"seq":1,"ts":"2026-11-24T10:22:20.761Z","method":"POST","path":"/api/v1/generate","body":{"task":"activity_plan","prompt":"活动主题：演示活动方案（虚构）；目标：提升虚构会员参与度；口径：全部虚构。"}}
+{"seq":2,"ts":"2026-11-24T10:22:20.783Z","method":"POST","path":"/api/v1/generate","body":{"task":"channel_copy","channel":"wechat","prompt":"wechat 渠道文案：面向虚构会员，介绍虚构权益，口径一致。"}}
+{"seq":3,"ts":"2026-11-24T10:22:20.798Z","method":"POST","path":"/api/v1/generate","body":{"task":"channel_copy","channel":"sms","prompt":"sms 渠道文案：面向虚构会员，介绍虚构权益，口径一致。"}}
+{"seq":4,"ts":"2026-11-24T10:22:20.813Z","method":"POST","path":"/api/v1/generate","body":{"task":"channel_copy","channel":"email","prompt":"email 渠道文案：面向虚构会员，介绍虚构权益，口径一致。"}}
+{"seq":5,"ts":"2026-11-24T10:22:20.829Z","method":"POST","path":"/api/v1/generate","body":{"task":"channel_copy","channel":"in_app","prompt":"in_app 渠道文案：面向虚构会员，介绍虚构权益，口径一致。"}}

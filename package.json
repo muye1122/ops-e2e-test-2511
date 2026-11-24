@@ -1,0 +1,30 @@
+{
+  "name": "ops-assistant-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Runnable end-to-end suite for an operations assistant: redaction before gateway, human review transitions, restored drafts and aggregated zero-outbound audit. Node 22 + Express + React + Vite + Playwright.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "vendor": "node mock-server/mock-vendor.js",
+    "gateway": "node mock-server/gateway.js",
+    "review": "node mock-server/review-queue.js",
+    "ops": "node mock-server/ops.js",
+    "services": "concurrently -k \"npm:vendor\" \"npm:gateway\" \"npm:review\" \"npm:ops\"",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.7"
+  },
+  "license": "MIT"
+}

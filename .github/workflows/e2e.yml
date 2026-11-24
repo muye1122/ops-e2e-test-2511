@@ -1,0 +1,74 @@
+name: Operations assistant end-to-end acceptance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build demo UI
+        run: npm run build
+
+      - name: Run one-command end-to-end suite
+        run: npm test
+
+      - name: Print case-by-case result matrix
+        if: always()
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'test-results/results.json';
+          if (!fs.existsSync(file)) {
+            console.log('No results.json produced (test run did not start).');
+            process.exit(0);
+          }
+          const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const rows = [];
+          function walk(suite) {
+            for (const child of suite.suites || []) walk(child);
+            for (const spec of suite.specs || []) {
+              for (const t of spec.tests || []) {
+                rows.push([spec.title, t.results?.[0]?.status || t.status || 'unknown']);
+              }
+            }
+          }
+          for (const suite of report.suites || []) walk(suite);
+          console.log('| 测试用例 | 结果 |');
+          console.log('|---|---|');
+          for (const [title, status] of rows) console.log(`| ${title} | ${status} |`);
+          NODE
+
+      - name: Assert fictional PII is absent from vendor request log
+        shell: bash
+        run: |
+          test -s mock-vendor-requests.log
+          if grep -E '13800001234|lianxi@example\.test|内部谈判底线' mock-vendor-requests.log; then
+            echo "Leak detected in vendor request log"
+            exit 1
+          fi
+          echo "Vendor log clean: no raw phone / email / private paragraph."
+
+      - name: Upload run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-evidence
+          path: |
+            test-results/results.json
+            mock-vendor-requests.log
